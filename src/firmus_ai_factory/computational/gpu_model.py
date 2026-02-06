@@ -72,6 +72,76 @@ B200_SPECS = GPUSpecifications(
     base_power_fraction=0.65
 )
 
+GB300_SPECS = GPUSpecifications(
+    name="NVIDIA GB300 Blackwell Ultra",
+    tdp_watts=1400.0,
+    peak_flops_fp16=5000.0,  # TFLOPS per GPU (~360 PFLOPS / 72)
+    peak_flops_fp32=2500.0,
+    hbm_bandwidth_tb_s=8.0,
+    hbm_capacity_gb=288.0,
+    nvlink_bandwidth_gb_s=1800.0,  # NVLink 5.0
+    idle_power_fraction=0.08,
+    base_power_fraction=0.65
+)
+
+
+@dataclass
+class NVL72RackConfig:
+    """Configuration for an NVL72 rack-scale system.
+    
+    Models NVIDIA GB200/GB300 NVL72 rack architecture:
+    - 72 GPUs + 36 Grace CPUs in a single rack
+    - 130 TB/s aggregate NVLink bandwidth
+    - Liquid-cooled compute with air-cooled peripherals
+    """
+    gpu_specs: GPUSpecifications
+    num_gpus: int = 72
+    num_cpus: int = 36
+    nvlink_aggregate_tb_s: float = 130.0  # Total NVLink bandwidth
+    rack_power_kw: float = 150.0  # Total rack power budget
+    cpu_power_per_unit: float = 250.0  # Grace CPU TDP (W)
+    switch_power_total: float = 3200.0  # NVSwitch + transceivers (W)
+    peripheral_power: float = 2000.0  # NICs, storage, BMC (W)
+    
+    @property
+    def total_gpu_power(self) -> float:
+        """Total GPU power at TDP (W)."""
+        return self.num_gpus * self.gpu_specs.tdp_watts
+    
+    @property
+    def total_cpu_power(self) -> float:
+        """Total CPU power (W)."""
+        return self.num_cpus * self.cpu_power_per_unit
+    
+    @property
+    def total_rack_power(self) -> float:
+        """Total rack power at full load (W)."""
+        return (self.total_gpu_power + self.total_cpu_power +
+                self.switch_power_total + self.peripheral_power)
+    
+    @property
+    def hbm_total_tb(self) -> float:
+        """Total GPU HBM capacity in TB."""
+        return self.num_gpus * self.gpu_specs.hbm_capacity_gb / 1000.0
+
+
+# Pre-defined NVL72 rack configurations
+GB300_NVL72_CONFIG = NVL72RackConfig(
+    gpu_specs=GB300_SPECS,
+    num_gpus=72,
+    num_cpus=36,
+    nvlink_aggregate_tb_s=130.0,
+    rack_power_kw=150.0
+)
+
+GB200_NVL72_CONFIG = NVL72RackConfig(
+    gpu_specs=B200_SPECS,
+    num_gpus=72,
+    num_cpus=36,
+    nvlink_aggregate_tb_s=130.0,
+    rack_power_kw=120.0
+)
+
 
 @dataclass
 class PowerProfile:
