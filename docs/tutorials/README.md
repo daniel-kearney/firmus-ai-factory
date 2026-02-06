@@ -290,4 +290,4 @@ for name, specs in gpu_configs:
 
 *Document Version: 1.0*
 *Last Updated: February 2026*
-*Author: Firmus Engineering Team*
+*Author: Dr. Daniel Kearney (daniel.kearney@firmus.co)*
