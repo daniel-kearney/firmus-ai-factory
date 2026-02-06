@@ -152,5 +152,5 @@ Developed by Firmus for AI Factory infrastructure optimization.
 
 ## Contact
 
-- Daniel Kearney - CTO, Firmus
+- Dr. Daniel Kearney - CTO, Firmus - daniel.kearney@firmus.co
 - GitHub: [@daniel-kearney](https://github.com/daniel-kearney)
