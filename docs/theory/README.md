@@ -6,6 +6,10 @@ This document provides the comprehensive mathematical foundations underlying the
 
 1. [GPU Power Modeling](#1-gpu-power-modeling)
 2. [Thermal Modeling](#2-thermal-modeling)
+   - 2.1-2.6: Immersion Cooling (single/two-phase)
+   - 2.7: Air Cooling for Peripheral Components
+   - 2.8: Direct-to-Chip Liquid Cooling
+   - 2.9: GB300 NVL72 Rack-Scale Thermal Analysis
 3. [Power Delivery Network](#3-power-delivery-network)
 4. [Numerical Methods](#4-numerical-methods)
 5. [Model Validation](#5-model-validation)
@@ -29,7 +33,7 @@ Where:
 
 For deep learning training workloads, we employ a phase-aware power model:
 
-$$P_{train}(t) = P_{base} + \sum_{i} \alpha_i \cdot f_i(t) + \epsilon(t)$$
+$$P_{train}(t) = P_{base} + \sum_i \alpha_i \cdot f_i(t) + \epsilon(t)$$
 
 Where:
 - **P_base**: Sustained baseline power (~65-70% of TDP)
@@ -46,7 +50,21 @@ Where:
 | Gradient Sync | 0.60 | 15% |
 | Optimizer Step | 0.75 | 10% |
 
-### 1.3 Utilization-Based Power Model
+### 1.3 GB300 Blackwell Ultra Specifications
+
+The GB300 NVL72 rack configuration specifications:
+
+| Parameter | Value | Units |
+|-----------|-------|-------|
+| GPU TDP | 1400 | W |
+| GPUs per rack | 72 | - |
+| CPUs per rack | 36 | - |
+| CPU TDP | 250 | W |
+| NVLink Switches | 18 | - |
+| Rack IT Power | ~150 | kW |
+| Cooling Type | Direct-to-chip liquid + air hybrid | - |
+
+### 1.4 Utilization-Based Power Model
 
 For general workloads, power scales with GPU utilization:
 
@@ -54,41 +72,8 @@ $$P(u) = P_{idle} + (P_{TDP} - P_{idle}) \cdot u^\alpha$$
 
 Where:
 - **u**: GPU utilization (0 to 1)
-- **α**: Non-linearity exponent (typically 1.2 for slight super-linear scaling)
+- **α**: Non-linearity exponent (typically 1.2)
 - **P_idle**: Idle power (~10-15% of TDP)
-
-### 1.4 FLOPS and Model Efficiency
-
-#### FLOPS per Token (Transformer Models)
-
-For transformer architectures, the computational cost per token is:
-
-$$FLOP_{token} \approx 6 \cdot N_{params}$$
-
-This accounts for:
-- 2N for forward pass matrix multiplications
-- 4N for backward pass (gradients w.r.t. inputs and weights)
-
-#### Model FLOPS Utilization (MFU)
-
-$$MFU = \frac{\text{Observed Throughput} \times FLOP_{token}}{\text{Peak FLOPS}}$$
-
-Typical MFU values:
-- Optimal: 50-60%
-- Good: 40-50%
-- Suboptimal: <40%
-
-### 1.5 Roofline Model Analysis
-
-Iteration time is bounded by either compute or memory:
-
-$$T_{iter} = \max(T_{compute}, T_{memory}) \cdot (1 + \eta_{overhead})$$
-
-Where:
-
-$$T_{compute} = \frac{6 \cdot N_{params} \cdot B}{\text{Peak FLOPS} \cdot MFU}$$
-
-$$T_{memory} = \frac{2 \cdot N_{params} \cdot 4}{\text{HBM Bandwidth}}$$
 
 ---
 
@@ -102,106 +87,164 @@ The thermal model couples fluid and solid domains through the Navier-Stokes and 
 
 $$\rho c_p \left(\frac{\partial T}{\partial t} + \mathbf{u} \cdot \nabla T\right) = k_f \nabla^2 T$$
 
-Where:
-- **ρ**: Fluid density (kg/m³)
-- **c_p**: Specific heat capacity (J/kg·K)
-- **u**: Velocity field (m/s)
-- **k_f**: Thermal conductivity (W/m·K)
-
 #### Solid Domain (GPU/Heatsink)
 
 $$\rho_s c_{ps} \frac{\partial T}{\partial t} = \nabla \cdot (k_s \nabla T) + q_{gen}$$
 
-Where:
-- **q_gen**: Volumetric heat generation (W/m³)
-- **k_s**: Solid thermal conductivity (W/m·K)
-
-#### Interface Conditions
-
-At the fluid-solid interface Γ:
-
-$$T_f|_\Gamma = T_s|_\Gamma \quad \text{(temperature continuity)}$$
-
-$$-k_f \nabla T_f \cdot \mathbf{n}|_\Gamma = -k_s \nabla T_s \cdot \mathbf{n}|_\Gamma \quad \text{(heat flux continuity)}$$
-
 ### 2.2 Thermal Resistance Network
 
-For reduced-order modeling, we employ a thermal resistance network:
+For reduced-order modeling:
 
 $$T_j = T_{ambient} + P_{GPU} \cdot (R_{jc} + R_{ch} + R_{ha})$$
 
-| Resistance | Description | Typical Value |
-|------------|-------------|---------------|
-| R_jc | Junction-to-case | 0.10-0.15 K/W |
-| R_ch | Case-to-heatsink (TIM) | 0.05-0.10 K/W |
-| R_ha | Heatsink-to-ambient | 0.03-0.08 K/W |
-
-**Note**: For immersion cooling, R_ch is significantly reduced (0.03-0.05 K/W) due to direct liquid contact eliminating the TIM interface.
+| Resistance | Description | Air Cooling | Liquid Cooling |
+|------------|-------------|-------------|----------------|
+| R_jc | Junction-to-case | 0.10-0.15 K/W | 0.10-0.15 K/W |
+| R_ch | Case-to-heatsink | 0.08-0.12 K/W | 0.02-0.04 K/W |
+| R_ha | Heatsink-to-ambient | 0.05-0.10 K/W | 0.01-0.03 K/W |
 
 ### 2.3 Convective Heat Transfer
 
-#### Forced Convection (Single-Phase Immersion)
-
-Nusselt number correlation for flow over GPU heatsinks:
+#### Nusselt Correlation
 
 $$Nu = 0.45 \cdot Re^{0.43}$$
 
-Heat transfer coefficient:
-
 $$h = \frac{Nu \cdot k_f}{L_c}$$
-
-Where:
-- **L_c**: Characteristic length (m)
-- **Re**: Reynolds number = ρuL/μ
-
-#### Reynolds Number
-
-$$Re = \frac{\rho u L_c}{\mu}$$
 
 ### 2.4 Coolant Energy Balance
 
-For the coolant temperature rise through the system:
-
-$$Q = \dot{m} \cdot c_p \cdot \Delta T_{coolant}$$
-
-Solving for temperature rise:
-
 $$\Delta T_{coolant} = \frac{P_{total}}{\dot{m} \cdot c_p}$$
-
-Where:
-- **ṁ**: Mass flow rate (kg/s)
-- **P_total**: Total heat dissipation (W)
 
 ### 2.5 Two-Phase Boiling Heat Transfer
 
-For two-phase immersion cooling with nucleate boiling, we use the Rohsenow correlation:
-
-$$h_{boiling} = C_{sf} \left(\frac{c_p \Delta T_{sat}}{h_{fg} \cdot Pr^n}\right)^3$$
-
-Simplified correlation for dielectric fluids:
+For nucleate boiling (immersion cooling):
 
 $$h_{boiling} \approx 5000 \cdot \left(\frac{q''}{10000}\right)^{0.7}$$
-
-Where:
-- **q''**: Heat flux (W/m²)
-- **C_sf**: Surface-fluid interaction coefficient (~0.013)
-- **h_fg**: Latent heat of vaporization (J/kg)
 
 ### 2.6 Dielectric Coolant Properties
 
 | Property | 3M EC-100 | Novec 7100 | Units |
 |----------|-----------|------------|-------|
-| Density (ρ) | 1510 | 1510 | kg/m³ |
-| Specific Heat (c_p) | 1100 | 1183 | J/kg·K |
-| Thermal Conductivity (k) | 0.063 | 0.069 | W/m·K |
-| Viscosity (μ) | 0.00077 | 0.00058 | Pa·s |
-| Prandtl Number | 13.4 | 9.9 | - |
+| Density | 1510 | 1510 | kg/m³ |
+| Specific Heat | 1100 | 1183 | J/kg·K |
+| Thermal Conductivity | 0.063 | 0.069 | W/m·K |
 | Boiling Point | 61 | 61 | °C |
-| Latent Heat | 88,000 | 112,000 | J/kg |
 
-#### Thermal Diffusivity
+### 2.7 Air Cooling for Peripheral Components
 
-$$\alpha_{thermal} = \frac{k}{\rho c_p}$$
+For GB300 NVL72 racks, peripheral components (NVLink switches, CPUs, NICs) are air-cooled while GPUs use direct-to-chip liquid cooling.
+
+#### Forced Air Convection
+
+Heat transfer coefficient for forced air over heatsinks:
+
+$$h_{air} = \frac{Nu \cdot k_{air}}{L_c}$$
+
+Where the Nusselt number for turbulent flow:
+
+$$Nu = 0.023 \cdot Re^{0.8} \cdot Pr^{0.4}$$
+
+#### Air Flow Requirements
+
+Volumetric flow rate for target temperature rise:
+
+$$\dot{V} = \frac{Q}{\rho_{air} \cdot c_{p,air} \cdot \Delta T}$$
+
+#### Fan Power Model
+
+Fan power scales with flow rate cubed:
+
+$$P_{fan} = k_{fan} \cdot \dot{V}^3$$
+
+Typically k_fan = 0.5-1.5 for data center fans.
+
+#### NVL72 Air Cooling Specifications
+
+| Component | Power (W) | Quantity | Total (kW) |
+|-----------|-----------|----------|------------|
+| NVLink Switches | 2000-3200 | 18 | 36-58 |
+| CPUs | 250 | 36 | 9 |
+| NICs | 25 | 36 | 0.9 |
+| Memory/Other | - | - | ~5 |
+
+### 2.8 Direct-to-Chip Liquid Cooling (DLC)
+
+Direct-to-chip cooling uses cold plates attached directly to GPU/CPU packages with liquid coolant flowing through microchannels.
+
+#### Cold Plate Thermal Resistance
+
+$$R_{cp} = R_{base} + R_{channel} + R_{convective}$$
+
+Where:
+- **R_base**: Conduction through cold plate base (~0.005 K/W)
+- **R_channel**: Conduction to channel walls (~0.003 K/W)
+- **R_convective**: Convection to coolant (~0.010-0.015 K/W)
+
+#### Microchannel Heat Transfer
+
+For laminar flow in microchannels:
+
+$$Nu = 4.36$$ (constant heat flux)
+
+For turbulent flow (Re > 2300):
+
+$$Nu = 0.023 \cdot Re^{0.8} \cdot Pr^{0.4}$$
+
+#### Junction Temperature Calculation
+
+$$T_j = T_{supply} + Q \cdot (R_{jc} + R_{TIM} + R_{cp}) + \frac{Q}{\dot{m} \cdot c_p}$$
+
+#### Flow Rate Requirements
+
+Minimum flow rate for target return temperature:
+
+$$\dot{m} = \frac{Q}{c_p \cdot (T_{return,max} - T_{supply})}$$
+
+#### CDU (Coolant Distribution Unit) Power
+
+$$P_{CDU} = P_{pump} + P_{heat\_exchanger}$$
+
+$$P_{pump} = \frac{\dot{V} \cdot \Delta P}{\eta_{pump}}$$
+
+Typical CDU efficiency: 95-98%
+
+#### Cold Plate Specifications for GB300
+
+| Parameter | Value | Units |
+|-----------|-------|-------|
+| Cold Plate HTC | 8000-12000 | W/m²·K |
+| Flow Rate (per GPU) | 2-4 | L/min |
+| Pressure Drop | 30-50 | kPa |
+| Supply Temperature | 25-35 | °C |
+| Max Return Temperature | 45-50 | °C |
+
+### 2.9 GB300 NVL72 Rack-Scale Thermal Analysis
+
+The NVL72 rack employs a hybrid cooling architecture:
+- **GPUs**: Direct-to-chip liquid cooling (1400W × 72 = 100.8 kW)
+- **CPUs**: Direct-to-chip liquid cooling (250W × 36 = 9 kW)
+- **Switches/NICs**: Forced air cooling (~40 kW)
+
+#### Total Cooling Load
+
+$$Q_{total} = Q_{GPU} + Q_{CPU} + Q_{switch} + Q_{peripheral}$$
+
+$$Q_{total} \approx 100.8 + 9 + 40 + 5 \approx 155 \text{ kW}$$
+
+#### Liquid Cooling Loop Sizing
+
+For DLC components (GPUs + CPUs):
+
+$$\dot{m}_{DLC} = \frac{Q_{DLC}}{c_p \cdot \Delta T} = \frac{110,000}{4180 \cdot 20} \approx 1.3 \text{ kg/s}$$
+
+#### pPUE Calculation
+
+$$pPUE = \frac{P_{IT} + P_{cooling}}{P_{IT}}$$
+
+Where:
+$$P_{cooling} = P_{CDU} + P_{fans} + P_{chillers}$$
+
+Target pPUE for DLC: 1.05-1.10
 
 ---
 
@@ -209,34 +252,8 @@ $$\alpha_{thermal} = \frac{k}{\rho c_p}$$
 
 ### 3.1 Multi-Stage Converter Cascade
 
-The power delivery network consists of cascaded converters from grid to GPU:
-
-$$G_{system}(s) = \prod_{i=1}^{N} G_i(s)$$
-
-Typical stages:
-1. **Medium Voltage Transformer**: 13.8kV → 480V
-2. **UPS System**: 480V AC → 480V AC (conditioned)
-3. **PDU**: 480V → 208V
-4. **PSU**: 208V AC → 12V DC
-5. **VRM**: 12V → GPU core voltages
-
-### 3.2 Target Impedance Design
-
-For voltage regulation under transient loads:
-
-$$Z_{target} = \frac{\Delta V_{allowed}}{I_{transient}}$$
-
-Where:
-- **ΔV_allowed**: Maximum voltage droop (typically 3-5% of nominal)
-- **I_transient**: Maximum current step
-
-### 3.3 Efficiency Modeling
-
-Overall PDN efficiency:
-
 $$\eta_{PDN} = \prod_{i=1}^{N} \eta_i$$
 
-Typical stage efficiencies:
 | Stage | Efficiency |
 |-------|------------|
 | Transformer | 98-99% |
@@ -245,33 +262,24 @@ Typical stage efficiencies:
 | PSU | 94-96% |
 | VRM | 90-95% |
 
+### 3.2 Target Impedance Design
+
+$$Z_{target} = \frac{\Delta V_{allowed}}{I_{transient}}$$
+
 ---
 
 ## 4. Numerical Methods
 
 ### 4.1 Time Integration
 
-For transient simulations, we employ explicit Euler integration:
-
+Explicit Euler:
 $$T^{n+1} = T^n + \Delta t \cdot f(T^n, t^n)$$
 
-Stability criterion (CFL condition):
-
-$$\Delta t \leq \frac{(\Delta x)^2}{2\alpha}$$
+Stability: $\Delta t \leq \frac{(\Delta x)^2}{2\alpha}$
 
 ### 4.2 Spatial Discretization
 
-Finite difference approximation for the Laplacian:
-
 $$\nabla^2 T \approx \frac{T_{i+1} - 2T_i + T_{i-1}}{(\Delta x)^2}$$
-
-### 4.3 Stochastic Modeling
-
-Power variations are modeled with Gaussian noise:
-
-$$\epsilon(t) \sim \mathcal{N}(0, \sigma^2)$$
-
-Where σ ≈ 0.02 × TDP for typical GPU workloads.
 
 ---
 
@@ -279,41 +287,35 @@ Where σ ≈ 0.02 × TDP for typical GPU workloads.
 
 ### 5.1 GPU Power Model Validation
 
-The power model has been validated against:
-- NVIDIA SMI power readings
-- RAPL energy counters
-- External power meter measurements
-
-Typical accuracy: ±5% for mean power, ±10% for transient peaks.
+Validated against NVIDIA SMI, RAPL counters, and external power meters.
+Typical accuracy: ±5% for mean power.
 
 ### 5.2 Thermal Model Validation
 
-Thermal predictions validated against:
-- GPU junction temperature sensors
-- CFD simulations (ANSYS Fluent, OpenFOAM)
-- Experimental immersion cooling data
-
+Validated against GPU junction sensors and CFD simulations.
 Typical accuracy: ±2°C for junction temperature.
 
-### 5.3 System-Level Validation
+### 5.3 GB300 NVL72 Validation Targets
 
-Partial PUE (pPUE) predictions validated against:
-- Facility metering data
-- CDU power measurements
-- Pump flow rate verification
+| Metric | Target | Validation Method |
+|--------|--------|-------------------|
+| Junction Temp | ±3°C | Sensor data |
+| Coolant ΔT | ±1°C | Flow/temp sensors |
+| pPUE | ±2% | Facility metering |
+| Flow Rate | ±5% | Flow meters |
 
 ---
 
 ## References
 
-1. NVIDIA H100/H200/B200 GPU Architecture Whitepapers
+1. NVIDIA GB300/H200/B200 GPU Architecture Whitepapers
 2. 3M Novec Engineered Fluids Thermal Properties Data
 3. Incropera, F.P. et al., "Fundamentals of Heat and Mass Transfer"
-4. Kaplan, J.M. et al., "Scaling Laws for Neural Language Models"
-5. ASHRAE TC 9.9 Data Center Thermal Guidelines
+4. ASHRAE TC 9.9 Data Center Thermal Guidelines
+5. NVIDIA DGX SuperPOD Reference Architecture
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: February 2026*  
+*Document Version: 2.0*
+*Last Updated: February 2026*
 *Author: Firmus Engineering Team*
