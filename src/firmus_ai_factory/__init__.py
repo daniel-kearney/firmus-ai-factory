@@ -5,8 +5,8 @@ AI data center infrastructure from GPU to grid.
 """
 
 __version__ = "0.2.0"
-__author__ = "Daniel Kearney"
-__email__ = "daniel@firmus.ai"
+__author__ = "Dr. Daniel Kearney"
+__email__ = "daniel.kearney@firmus.co"
 
 from firmus_ai_factory.core import AIFactorySystem
 from firmus_ai_factory.computational import GPUModel
