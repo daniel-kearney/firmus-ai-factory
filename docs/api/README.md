@@ -21,8 +21,8 @@ import firmus_ai_factory
 
 # Version
 firmus_ai_factory.__version__  # "0.2.0"
-firmus_ai_factory.__author__   # "Daniel Kearney"
-firmus_ai_factory.__email__    # "daniel@firmus.ai"
+firmus_ai_factory.__author__   # "Dr. Daniel Kearney"
+firmus_ai_factory.__email__    # "daniel.kearney@firmus.co"
 ```
 
 ### Top-Level Exports
