@@ -475,4 +475,4 @@ Validated against GPU junction sensors and CFD simulations. Typical accuracy: ±
 
 *Document Version: 3.0*  
 *Last Updated: February 2026*  
-*Author: Firmus Engineering Team*
+*Author: Dr. Daniel Kearney (daniel.kearney@firmus.co)*
