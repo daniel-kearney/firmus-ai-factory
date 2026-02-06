@@ -10,8 +10,8 @@ long_description = (this_directory / "README.md").read_text()
 setup(
     name="firmus-ai-factory",
     version="0.1.0",
-    author="Daniel Kearney",
-    author_email="daniel@firmus.ai",
+    author="Dr. Daniel Kearney",
+    author_email="daniel.kearney@firmus.co",
     description="Digital Twin framework for AI Factory infrastructure",
     long_description=long_description,
     long_description_content_type="text/markdown",
