@@ -776,13 +776,13 @@ SITE_LN2_LN3 = SiteConfig(
     status=SiteStatus.UNDER_CONSTRUCTION,
     ashrae=ASHRAE_LAUNCESTON,
     grid_mix=GRID_MIX_TASMANIA,
-    gpu_series="H200",
-    nv_code="HGX",
+    gpu_series="GB300",
+    nv_code="Oberon",
     gross_mw=46.0,
     pue=1.1,
     num_racks=256,
-    num_gpus=2048,
-    rack_power_kw=10.5,
+    num_gpus=18432,
+    rack_power_kw=140.0,
 )
 
 SITE_WV1 = SiteConfig(
@@ -836,8 +836,9 @@ SITE_RT1 = SiteConfig(
     rack_power_kw=210.0,
 )
 
-SITE_BT1_3 = SiteConfig(
-    dc_code="BT1-3",
+# Batam split: first 120 MW is GB300, remaining capacity is VR (Vera Rubin)
+SITE_BT1_2 = SiteConfig(
+    dc_code="BT1-2",
     campus="Batam",
     region="Batam, Indonesia",
     provider="DayOne",
@@ -846,11 +847,28 @@ SITE_BT1_3 = SiteConfig(
     grid_mix=GRID_MIX_BATAM,
     gpu_series="GB300",
     nv_code="Oberon",
-    gross_mw=150.0,
+    gross_mw=120.0,
     pue=1.3,
-    num_racks=512,
-    num_gpus=36864,
+    num_racks=410,
+    num_gpus=29520,
     rack_power_kw=140.0,
+)
+
+SITE_BT3 = SiteConfig(
+    dc_code="BT3",
+    campus="Batam",
+    region="Batam, Indonesia",
+    provider="DayOne",
+    status=SiteStatus.CONTRACTING,
+    ashrae=ASHRAE_BATAM,
+    grid_mix=GRID_MIX_BATAM,
+    gpu_series="VR",
+    nv_code="Oberon",
+    gross_mw=30.0,
+    pue=1.3,
+    num_racks=102,
+    num_gpus=7344,
+    rack_power_kw=210.0,
 )
 
 SITE_PG = SiteConfig(
@@ -878,13 +896,13 @@ SITE_BK2 = SiteConfig(
     status=SiteStatus.IN_BUILD,
     ashrae=ASHRAE_MELBOURNE,
     grid_mix=GRID_MIX_VICTORIA,
-    gpu_series="H200",
-    nv_code="HGX",
+    gpu_series="GB300",
+    nv_code="Oberon",
     gross_mw=55.0,
     pue=1.3,
     num_racks=384,
-    num_gpus=3072,
-    rack_power_kw=10.5,
+    num_gpus=27648,
+    rack_power_kw=140.0,
 )
 
 SITE_HU4 = SiteConfig(
@@ -982,7 +1000,8 @@ ALL_SITES: Dict[str, SiteConfig] = {
     "WV1": SITE_WV1,
     "GT1-2": SITE_GT1_2,
     "RT1": SITE_RT1,
-    "BT1-3": SITE_BT1_3,
+    "BT1-2": SITE_BT1_2,
+    "BT3": SITE_BT3,
     "PG": SITE_PG,
     "BK2": SITE_BK2,
     "HU4": SITE_HU4,

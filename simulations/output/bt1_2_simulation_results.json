@@ -1,0 +1,22 @@
+{
+  "site": "Batam BT1-2",
+  "platform": "GB300 NVL72",
+  "total_racks": 410,
+  "gross_mw": 120.0,
+  "design_ambient_c": 32.2,
+  "extreme_ambient_c": 34.4,
+  "design_peak_cws_c": 34.803535589811716,
+  "design_peak_pg25_supply_c": 36.803535589811716,
+  "design_peak_pg25_return_c": 50.803642268725255,
+  "design_peak_gpu_tj_c": 65.97020225647839,
+  "design_nvidia_compliant": "True",
+  "extreme_peak_pg25_supply_c": 39.016313404953316,
+  "extreme_nvidia_compliant": "True",
+  "site_it_load_mw": 57.4,
+  "site_pump_power_mw": 0.3125777777777778,
+  "site_ppue": 1.0054456058846302,
+  "site_capacity_margin_pct": 126.4808362369338,
+  "annual_pump_energy_mwh": 2738.1813333333325,
+  "annual_avg_ppue": 1.0053670634920633,
+  "nvidia_all_compliant": true
+}
