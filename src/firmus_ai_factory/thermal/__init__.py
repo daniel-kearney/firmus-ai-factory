@@ -18,6 +18,20 @@ from firmus_ai_factory.thermal.direct_to_chip import (
     DirectToChipCooling,
     ColdPlateSpec,
 )
+from firmus_ai_factory.thermal.vera_rubin_thermal import (
+    VRNvl72ThermalModel,
+    VRThermalLimits,
+    PG25Properties,
+)
+from firmus_ai_factory.thermal.benmax_hcu2500 import (
+    BenmaxHCU2500,
+    BenmaxHypercube,
+    HCUOperatingMode,
+    HCURedundancyMode,
+    HeatExchangerSpecs,
+    PumpSpecs,
+    CDUSelfQualification,
+)
 
 __all__ = [
     "ImmersionCoolingSystem",
@@ -25,4 +39,14 @@ __all__ = [
     "NVL72PeripheralAirCooling",
     "DirectToChipCooling",
     "ColdPlateSpec",
+    "VRNvl72ThermalModel",
+    "VRThermalLimits",
+    "PG25Properties",
+    "BenmaxHCU2500",
+    "BenmaxHypercube",
+    "HCUOperatingMode",
+    "HCURedundancyMode",
+    "HeatExchangerSpecs",
+    "PumpSpecs",
+    "CDUSelfQualification",
 ]
