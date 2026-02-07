@@ -39,6 +39,9 @@ from firmus_ai_factory.environment.site_conditions import (
 def _resolve_platform(site: SiteConfig) -> GPUPlatform:
     """Map site GPU series and NV code to GPUPlatform enum.
     
+    All Firmus sites use either GB300 or VR (Vera Rubin) platforms.
+    No H100/H200 platforms are deployed.
+    
     Args:
         site: SiteConfig with gpu_series and nv_code
     
@@ -47,44 +50,33 @@ def _resolve_platform(site: SiteConfig) -> GPUPlatform:
     """
     series = site.gpu_series.upper()
     
-    if series in ("H100",):
-        return GPUPlatform.HGX_H100
-    elif series in ("H200",):
-        return GPUPlatform.HGX_H200
-    elif series in ("GB300",):
+    if series in ("GB300",):
         return GPUPlatform.GB300_NVL72
     elif series in ("VR", "VERA RUBIN"):
         # Default to Max P for Vera Rubin
         return GPUPlatform.VR_NVL72_MAX_P
     else:
-        raise ValueError(f"Unknown GPU series: {series}")
+        raise ValueError(
+            f"Unknown GPU series: {series}. "
+            f"All sites must use GB300 or VR platforms only.")
 
 
 def _resolve_cooling(platform: GPUPlatform) -> CoolingType:
     """Resolve cooling type from platform.
     
     Enforces canonical mapping:
-        HGX H100/H200 → Immersion
-        GB300/VR NVL72 → Benmax HCU2500
+        GB300/VR NVL72 → Benmax HCU2500 (air-liquid cooling)
     """
-    if platform in (GPUPlatform.HGX_H100, GPUPlatform.HGX_H200):
-        return CoolingType.IMMERSION
-    else:
-        return CoolingType.BENMAX_HCU2500
+    return CoolingType.BENMAX_HCU2500
 
 
 def _resolve_grid_region(site: SiteConfig) -> GridRegion:
     """Resolve grid region from site location.
     
-    Enforces canonical mapping:
-        HGX H100/H200 → Singapore
-        GB300/VR NVL72 → Australia NEM
+    All sites use Australian NEM grid model.
+    Batam sites use local grid but same voltage class.
     """
-    platform = _resolve_platform(site)
-    if platform in (GPUPlatform.HGX_H100, GPUPlatform.HGX_H200):
-        return GridRegion.SINGAPORE
-    else:
-        return GridRegion.AUSTRALIA_NEM
+    return GridRegion.AUSTRALIA_NEM
 
 
 # =============================================================================
@@ -205,41 +197,29 @@ def site_thermal_analysis(
             'coolant_inlet_c': coolant_inlet,
         }
         
-        if cooling == CoolingType.BENMAX_HCU2500:
-            result.update({
-                'outlet_temp_c': thermal.get('per_rack', {}).get('outlet_temp_c'),
-                'delta_t_c': thermal.get('per_rack', {}).get('delta_t_c'),
-                'flowrate_lpm': thermal.get('per_rack', {}).get('flowrate_lpm'),
-                'within_limits': thermal.get('per_rack', {}).get('within_limits'),
-                'cooling_capacity_kw': thermal.get('hypercube', {}).get('cooling_capacity_kw'),
-                'capacity_margin_pct': thermal.get('hypercube', {}).get('capacity_margin_pct'),
-                'pPUE': thermal.get('hypercube', {}).get('pPUE'),
-                'nvidia_compliant': thermal.get('all_compliant'),
-            })
-        else:
-            result.update({
-                'cooling_type': 'immersion',
-                'note': 'Immersion cooling — ambient-independent',
-            })
+        # All sites use Benmax HCU2500 air-liquid cooling
+        result.update({
+            'outlet_temp_c': thermal.get('per_rack', {}).get('outlet_temp_c'),
+            'delta_t_c': thermal.get('per_rack', {}).get('delta_t_c'),
+            'flowrate_lpm': thermal.get('per_rack', {}).get('flowrate_lpm'),
+            'within_limits': thermal.get('per_rack', {}).get('within_limits'),
+            'cooling_capacity_kw': thermal.get('hypercube', {}).get('cooling_capacity_kw'),
+            'capacity_margin_pct': thermal.get('hypercube', {}).get('capacity_margin_pct'),
+            'pPUE': thermal.get('hypercube', {}).get('pPUE'),
+            'nvidia_compliant': thermal.get('all_compliant'),
+        })
         
         monthly_results.append(result)
     
-    # Annual summary
-    if monthly_results and 'within_limits' in monthly_results[0]:
-        months_within_limits = sum(
-            1 for r in monthly_results if r.get('within_limits', False))
-        months_nvidia_compliant = sum(
-            1 for r in monthly_results if r.get('nvidia_compliant', False))
-        worst_month = max(monthly_results, key=lambda r: r['ambient_temp_c'])
-        best_month = min(monthly_results, key=lambda r: r['ambient_temp_c'])
-        avg_ppue = sum(
-            r.get('pPUE', 0) for r in monthly_results) / 12
-    else:
-        months_within_limits = 12
-        months_nvidia_compliant = 12
-        worst_month = max(monthly_results, key=lambda r: r['ambient_temp_c'])
-        best_month = min(monthly_results, key=lambda r: r['ambient_temp_c'])
-        avg_ppue = 1.05  # Immersion estimate
+    # Annual summary — all sites use Benmax HCU2500
+    months_within_limits = sum(
+        1 for r in monthly_results if r.get('within_limits', False))
+    months_nvidia_compliant = sum(
+        1 for r in monthly_results if r.get('nvidia_compliant', False))
+    worst_month = max(monthly_results, key=lambda r: r['ambient_temp_c'])
+    best_month = min(monthly_results, key=lambda r: r['ambient_temp_c'])
+    avg_ppue = sum(
+        r.get('pPUE', 0) for r in monthly_results) / 12
     
     return {
         'site': dc_code,

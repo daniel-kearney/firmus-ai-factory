@@ -188,7 +188,7 @@ class TestSiteConfig:
     def test_all_sites_registered(self):
         """Verify all expected sites are in the registry."""
         expected_codes = [
-            "LN2/LN3", "WV1", "GT1-2", "RT1", "BT1-3",
+            "LN2/LN3", "WV1", "GT1-2", "RT1", "BT1-2", "BT3",
             "PG", "BK2", "HU4", "HU5", "HU6", "BE1", "MP1",
         ]
         for code in expected_codes:
@@ -210,10 +210,40 @@ class TestSiteConfig:
         tas_sites = get_sites_by_region("Tasmania")
         assert len(tas_sites) >= 3  # LN2/LN3, WV1, GT1-2
     
-    def test_sites_by_gpu_h200(self):
-        """Should find H200 sites (Singapore immersion)."""
-        h200_sites = get_sites_by_gpu("H200")
-        assert len(h200_sites) >= 2  # LN2/LN3, BK2
+    def test_sites_by_gpu_gb300(self):
+        """Should find GB300 sites (all Australian + Batam phase 1)."""
+        gb300_sites = get_sites_by_gpu("GB300")
+        assert len(gb300_sites) >= 8  # LN2/LN3, WV1, GT1-2, BT1-2, BK2, HU4, HU5, HU6, BE1
+    
+    def test_sites_by_gpu_vr(self):
+        """Should find VR (Vera Rubin) sites."""
+        vr_sites = get_sites_by_gpu("VR")
+        assert len(vr_sites) >= 3  # RT1, BT3, PG, MP1
+    
+    def test_no_h200_in_australia(self):
+        """No Australian sites should have H200 GPUs."""
+        for code, site in ALL_SITES.items():
+            if site.region not in ["Batam, Indonesia"]:
+                assert site.gpu_series != "H200", (
+                    f"Site {code} in {site.region} incorrectly assigned H200")
+    
+    def test_all_sites_gb300_or_vr(self):
+        """All sites should use either GB300 or VR platforms only."""
+        for code, site in ALL_SITES.items():
+            assert site.gpu_series in ["GB300", "VR"], (
+                f"Site {code} has invalid GPU series: {site.gpu_series}")
+    
+    def test_batam_split_gb300_120mw(self):
+        """Batam BT1-2 should be GB300 with 120 MW."""
+        bt12 = get_site("BT1-2")
+        assert bt12.gpu_series == "GB300"
+        assert bt12.gross_mw == pytest.approx(120.0, rel=0.01)
+    
+    def test_batam_split_vr_remaining(self):
+        """Batam BT3 should be VR with remaining capacity."""
+        bt3 = get_site("BT3")
+        assert bt3.gpu_series == "VR"
+        assert bt3.gross_mw == pytest.approx(30.0, rel=0.01)
     
     def test_sites_by_provider_firmus(self):
         """Should find multiple Firmus-operated sites."""
@@ -310,7 +340,7 @@ class TestPortfolioSummary:
         """GPU breakdown should cover all GPU series."""
         summary = portfolio_summary()
         assert 'gpu_breakdown' in summary
-        assert len(summary['gpu_breakdown']) >= 2  # At least H200 and GB300
+        assert len(summary['gpu_breakdown']) >= 2  # At least GB300 and VR
     
     def test_portfolio_region_breakdown(self):
         """Region breakdown should cover all regions."""
