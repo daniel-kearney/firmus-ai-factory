@@ -32,3 +32,17 @@ mypy>=1.3.0
 # Code formatting
 black>=23.3.0
 isort>=5.12.0
+
+# Grid integration and optimization
+cvxpy>=1.4.0
+gurobipy>=11.0.0  # Commercial solver (optional, use ECOS/SCS as fallback)
+
+# Control systems
+control>=0.9.0
+
+# Time series and forecasting
+statsmodels>=0.14.0
+
+# Additional utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
