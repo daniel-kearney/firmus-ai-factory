@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "model": "DeepSeek-R1-Distill-Qwen-32B",
+    "model_size_params": 32000000000,
+    "duration_hours": 10.0,
+    "gpu_platform": "H200",
+    "cooling_type": "immersion",
+    "timestamp": "2026-02-08T04:08:52.272854"
+  },
+  "benchmark_data": {
+    "ramp_rate_ws": 576.9,
+    "fall_rate_ws": -232.6,
+    "prefill_peak_w": 868.7,
+    "steady_avg_w": 519.3,
+    "steady_stdev_w": 86.8,
+    "steady_cv": 0.1672,
+    "tier": "tier_3_high_variance"
+  },
+  "energy_metrics": {
+    "total_energy_joules": 18693842.36204453,
+    "total_energy_kwh": 5.192733989456815,
+    "tokens_generated": 3599616,
+    "joules_per_token": 5.193287940170433,
+    "tokens_per_joule": 0.19255624019321796,
+    "avg_power_watts": 519.2720954156716,
+    "peak_power_watts": 868.7
+  },
+  "economics": {
+    "electricity_rate_usd_per_kwh": 0.12,
+    "base_cost_usd": 0.6231280787348178,
+    "discount_pct": 0.0,
+    "discounted_cost_usd": 0.6231280787348178,
+    "savings_usd": 0.0,
+    "cost_per_million_tokens": 0.1731095980056811
+  },
+  "phases": {
+    "ramp": {
+      "duration_s": 0.813485872768244,
+      "avg_power_w": 280.76,
+      "peak_power_w": 511.5199999999999,
+      "power_cv": 0.5305418845103905,
+      "energy_joules": 228.3942936384122,
+      "ramp_rate_ws": 576.9
+    },
+    "prefill": {
+      "duration_s": 0.9999999999999999,
+      "avg_power_w": 868.7,
+      "peak_power_w": 868.7,
+      "power_cv": 0.0,
+      "energy_joules": 868.6999999999999,
+      "ramp_rate_ws": null
+    },
+    "decode": {
+      "duration_s": 35996.16888730006,
+      "avg_power_w": 519.2821588465096,
+      "peak_power_w": 868.7,
+      "power_cv": 0.16697619129226368,
+      "energy_joules": 18692168.290000737,
+      "ramp_rate_ws": null
+    },
+    "fall": {
+      "duration_s": 2.0176268271679874,
+      "avg_power_w": 282.6000566060189,
+      "peak_power_w": 515.200056602634,
+      "power_cv": 0.4983944312046749,
+      "energy_joules": 570.1814555674955,
+      "ramp_rate_ws": -232.6
+    }
+  }
+}

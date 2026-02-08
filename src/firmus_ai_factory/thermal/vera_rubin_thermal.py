@@ -492,4 +492,3 @@ if __name__ == "__main__":
     
     report = model.generate_thermal_report(35.0)
     print(f"\npPUE at 35°C inlet: {report['cooling_power']['pPUE']:.4f}")
-"""
