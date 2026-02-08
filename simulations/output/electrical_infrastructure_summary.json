@@ -1,0 +1,57 @@
+{
+  "site_configuration": {
+    "total_it_load_kw": 120000.0,
+    "num_racks": 410,
+    "gpus_per_rack": 72,
+    "gpu_power_w": 1400.0,
+    "power_factor": 0.9,
+    "ambient_temp_c": 35.0
+  },
+  "workload": {
+    "model": "deepseek-r1-distill-32b",
+    "duration_hours": 10.0,
+    "peak_power_kw": 25644.024,
+    "avg_power_kw": 15326.20233857347,
+    "energy_kwh": 1532624.4911357744
+  },
+  "ups_array": {
+    "model": "Eaton 9395XR-1935",
+    "num_units": 65,
+    "total_capacity_kw": 121875.0,
+    "utilization": 0.9846153846153847,
+    "redundancy": "N+1",
+    "avg_efficiency": 0.97,
+    "peak_loss_kw": 793.1141443298998,
+    "total_energy_loss_kwh": 47400.757457807624
+  },
+  "transformer_array": {
+    "model": "MV-10MVA-22kV/11kV",
+    "num_units": 15,
+    "total_capacity_kva": 150000.0,
+    "utilization": 0.888888888888889,
+    "redundancy": "N+1",
+    "peak_top_oil_temp_c": 37.48276701049449,
+    "peak_hotspot_temp_c": 37.93417919422076,
+    "max_aging_factor": 0.00011423756332115125,
+    "peak_loss_kw": 214.51468016110533,
+    "total_energy_loss_kwh": 19267.21438277108
+  },
+  "grid_interaction": {
+    "peak_power_kw": 406.72520222046,
+    "avg_power_kw": 243.08013225334608,
+    "peak_current_a": 571.5538639118597,
+    "max_ramp_rate_kw_per_s": 256.52738768735287,
+    "max_current_ramp_a_per_s": 360.4871761854805,
+    "ramp_violations": 324592,
+    "ramp_violation_rate": 0.9016444444444445,
+    "power_factor": 0.99,
+    "thd_pct": 3.0
+  },
+  "total_system": {
+    "peak_grid_power_kw": 26437.1381443299,
+    "avg_grid_power_kw": 15800.208596467497,
+    "total_grid_energy_kwh": 1580025.248593582,
+    "total_losses_kwh": 66667.97184057871,
+    "overall_efficiency": 0.9699999999999999
+  }
+}
