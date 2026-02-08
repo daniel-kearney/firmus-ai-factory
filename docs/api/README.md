@@ -71,21 +71,122 @@ GPUModel(
 )
 ```
 
-#### GB300 Preset
+#### GPU Specification Presets
+
+The computational module includes pre-defined specifications for all supported GPU architectures:
 
 ```python
-from firmus_ai_factory.computational.gpu_model import GB300_SPECS
-
-# GB300 specifications
-GB300_SPECS = {
-    "name": "GB300",
-    "tdp": 1400.0,
-    "fp8_tflops": 9000.0,
-    "fp16_tflops": 4500.0,
-    "hbm_bandwidth": 8000.0,
-    "hbm_capacity": 192.0,
-}
+from firmus_ai_factory.computational.gpu_model import (
+    H100_SXM_SPECS,
+    H200_SPECS,
+    B200_SPECS,
+    GB300_SPECS,
+    VERA_RUBIN_MAX_P_SPECS,
+    VERA_RUBIN_MAX_Q_SPECS,
+)
 ```
+
+##### Hopper Architecture (Singapore + Immersion Cooling)
+
+**H100 SXM5:**
+```python
+H100_SXM_SPECS = GPUSpecifications(
+    name="NVIDIA H100 SXM",
+    tdp_watts=700.0,
+    peak_flops_fp16=1979.0,
+    peak_flops_fp32=989.5,
+    hbm_bandwidth_tb_s=3.35,
+    hbm_capacity_gb=80.0,
+    nvlink_bandwidth_gb_s=900.0,
+    max_junction_temp_c=83.0,
+)
+```
+
+**H200:**
+```python
+H200_SPECS = GPUSpecifications(
+    name="NVIDIA H200",
+    tdp_watts=700.0,
+    peak_flops_fp16=1979.0,
+    peak_flops_fp32=989.5,
+    hbm_bandwidth_tb_s=4.8,      # HBM3e upgrade
+    hbm_capacity_gb=141.0,       # HBM3e upgrade
+    nvlink_bandwidth_gb_s=900.0,
+    max_junction_temp_c=83.0,
+)
+```
+
+##### Blackwell Architecture (Australia + Benmax HCU2500)
+
+**B200:**
+```python
+B200_SPECS = GPUSpecifications(
+    name="NVIDIA B200",
+    tdp_watts=1000.0,
+    peak_flops_fp16=4500.0,
+    peak_flops_fp32=2250.0,
+    hbm_bandwidth_tb_s=8.0,
+    hbm_capacity_gb=192.0,
+    nvlink_bandwidth_gb_s=1800.0,
+    max_junction_temp_c=100.0,
+    energy_storage_j=65.0,       # On-board capacitance for power smoothing
+)
+```
+
+**GB300 Blackwell Ultra:**
+```python
+GB300_SPECS = GPUSpecifications(
+    name="NVIDIA GB300 Blackwell Ultra",
+    tdp_watts=1400.0,
+    peak_flops_fp16=5000.0,
+    peak_flops_fp32=2500.0,
+    hbm_bandwidth_tb_s=8.0,
+    hbm_capacity_gb=288.0,
+    nvlink_bandwidth_gb_s=1800.0,
+    max_junction_temp_c=100.0,
+    energy_storage_j=65.0,
+)
+```
+
+##### Vera Rubin Architecture (Australia + Benmax HCU2500)
+
+**Vera Rubin Max P (Maximum Performance):**
+```python
+VERA_RUBIN_MAX_P_SPECS = GPUSpecifications(
+    name="NVIDIA Vera Rubin (Max P)",
+    tdp_watts=2300.0,            # 2.3 kW TGP per GPU
+    peak_flops_fp16=6500.0,
+    peak_flops_fp32=3250.0,
+    hbm_bandwidth_tb_s=12.0,     # HBM4
+    hbm_capacity_gb=384.0,
+    nvlink_bandwidth_gb_s=3600.0,  # NVLink6
+    max_junction_temp_c=100.0,
+    energy_storage_j=400.0,      # Enhanced power smoothing
+)
+```
+
+**Vera Rubin Max Q (Optimized Efficiency):**
+```python
+VERA_RUBIN_MAX_Q_SPECS = GPUSpecifications(
+    name="NVIDIA Vera Rubin (Max Q)",
+    tdp_watts=1800.0,            # 1.8 kW TGP per GPU
+    peak_flops_fp16=5500.0,
+    peak_flops_fp32=2750.0,
+    hbm_bandwidth_tb_s=12.0,
+    hbm_capacity_gb=384.0,
+    nvlink_bandwidth_gb_s=3600.0,
+    max_junction_temp_c=100.0,
+    energy_storage_j=400.0,
+)
+```
+
+#### Platform-Region-Cooling Mapping
+
+| GPU Architecture | Deployment Region | Cooling Technology |
+|---|---|---|
+| H100 SXM / H200 | Singapore | Single-phase immersion cooling |
+| B200 / GB300 | Australia (Batam BT1-2) | Benmax HCU2500 Hypercube (liquid-to-liquid CDU) |
+| Vera Rubin | Australia (Batam BT1-2) | Benmax HCU2500 Hypercube (liquid-to-liquid CDU) |
 
 ---
 
