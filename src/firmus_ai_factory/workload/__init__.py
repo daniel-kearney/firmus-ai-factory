@@ -25,6 +25,15 @@ from .generator import (
     generate_workload
 )
 
+from .blackwell_smoothing import (
+    BlackwellPowerSmoothingProfile,
+    BlackwellPowerSmoother,
+    PRESET_PROFILES,
+    apply_blackwell_smoothing,
+    estimate_ups_stress_reduction,
+    estimate_grid_stability_improvement,
+)
+
 __all__ = [
     # Profile data structures
     'WorkloadProfile',
@@ -39,4 +48,12 @@ __all__ = [
     'ModelBenchmarkData',
     'BENCHMARK_MODELS',
     'generate_workload',
+    
+    # Blackwell Power Smoothing
+    'BlackwellPowerSmoothingProfile',
+    'BlackwellPowerSmoother',
+    'PRESET_PROFILES',
+    'apply_blackwell_smoothing',
+    'estimate_ups_stress_reduction',
+    'estimate_grid_stability_improvement',
 ]

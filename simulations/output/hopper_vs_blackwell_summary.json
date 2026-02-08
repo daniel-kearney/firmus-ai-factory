@@ -1,0 +1,76 @@
+{
+  "simulation_metadata": {
+    "model": "deepseek-r1-distill-32b",
+    "duration_hours": 10.0,
+    "num_gpus": 8,
+    "timestamp": "2026-02-08T07:29:36.771525"
+  },
+  "hopper_h200": {
+    "peak_power_w": 6949.6,
+    "avg_power_w": 4154.319476694537,
+    "energy_wh": 41543.31016470862,
+    "max_ramp_rate_w_per_s": 28574.40000000001,
+    "ups_battery_triggers": 0,
+    "ups_lifetime_years": Infinity,
+    "grid_violations": 30
+  },
+  "blackwell_gb200": {
+    "profile_1": {
+      "profile_name": "Conservative (Grid-friendly)",
+      "power_floor_pct": 90.0,
+      "ramp_up_rate_w_per_s": 560.0,
+      "ramp_down_rate_w_per_s": 560.0,
+      "peak_power_w": 6814.64,
+      "avg_power_w": 6254.733333074075,
+      "energy_wh": 62547.507073333334,
+      "energy_overhead_pct": 50.55975757672761,
+      "max_ramp_rate_w_per_s": 560.0,
+      "ramp_rate_reduction_pct": 98.04020381880284,
+      "power_swing_reduction_pct": 91.44985953340662,
+      "ups_battery_triggers": 0,
+      "ups_trigger_reduction_pct": 0.0,
+      "ups_lifetime_years": Infinity,
+      "ups_lifetime_extension_years": NaN,
+      "grid_violations": 0,
+      "grid_violation_reduction_pct": 100.0
+    },
+    "profile_2": {
+      "profile_name": "Moderate (UPS-optimized)",
+      "power_floor_pct": 70.0,
+      "ramp_up_rate_w_per_s": 1600.0,
+      "ramp_down_rate_w_per_s": 1600.0,
+      "peak_power_w": 6464.72,
+      "avg_power_w": 4864.8533329629645,
+      "energy_wh": 48648.66846444445,
+      "energy_overhead_pct": 17.103495777213947,
+      "max_ramp_rate_w_per_s": 1600.0,
+      "ramp_rate_reduction_pct": 94.4005823394367,
+      "power_swing_reduction_pct": 75.57102723830464,
+      "ups_battery_triggers": 0,
+      "ups_trigger_reduction_pct": 0.0,
+      "ups_lifetime_years": Infinity,
+      "ups_lifetime_extension_years": NaN,
+      "grid_violations": 20,
+      "grid_violation_reduction_pct": 33.333333333333336
+    },
+    "profile_3": {
+      "profile_name": "Aggressive (Minimal overhead)",
+      "power_floor_pct": 50.0,
+      "ramp_up_rate_w_per_s": 4000.0,
+      "ramp_down_rate_w_per_s": 4000.0,
+      "peak_power_w": 6949.6,
+      "avg_power_w": 4154.502324387465,
+      "energy_wh": 41545.138646716994,
+      "energy_overhead_pct": 0.0044013873741153625,
+      "max_ramp_rate_w_per_s": 4000.0,
+      "ramp_rate_reduction_pct": 86.00145584859176,
+      "power_swing_reduction_pct": 46.94637840478808,
+      "ups_battery_triggers": 0,
+      "ups_trigger_reduction_pct": 0.0,
+      "ups_lifetime_years": Infinity,
+      "ups_lifetime_extension_years": NaN,
+      "grid_violations": 21,
+      "grid_violation_reduction_pct": 30.0
+    }
+  }
+}
