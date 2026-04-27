@@ -34,7 +34,7 @@ black>=23.3.0
 isort>=5.12.0
 
 # Grid integration and optimization
-cvxpy>=1.4.0
+cvxpy>=1.7.5
 gurobipy>=11.0.0  # Commercial solver (optional, use ECOS/SCS as fallback)
 
 # Control systems
