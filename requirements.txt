@@ -30,7 +30,7 @@ mkdocs>=1.4.0
 mypy>=1.3.0
 
 # Code formatting
-black>=23.3.0
+black>=25.11.0
 isort>=5.12.0
 
 # Grid integration and optimization
