@@ -45,4 +45,4 @@ statsmodels>=0.14.0
 
 # Additional utilities
 python-dateutil>=2.8.0
-pytz>=2023.3
+pytz>=2026.1.post1
