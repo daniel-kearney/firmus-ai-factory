@@ -1,7 +1,7 @@
 # Core scientific computing
 numpy>=1.24.0
 scipy>=1.10.0
-pandas>=2.0.0
+pandas>=2.3.3
 
 # Numerical solvers
 numba>=0.57.0
