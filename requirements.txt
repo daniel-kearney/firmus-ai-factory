@@ -38,7 +38,7 @@ cvxpy>=1.4.0
 gurobipy>=11.0.0  # Commercial solver (optional, use ECOS/SCS as fallback)
 
 # Control systems
-control>=0.9.0
+control>=0.9.4
 
 # Time series and forecasting
 statsmodels>=0.14.0
