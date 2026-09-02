@@ -1,0 +1,14 @@
+{
+  "$comment": "Maps BoD content hash -> ElectricalCorrection payload with the raw discrimination_margins_s dict so the adapter's BoD-aware check runs.",
+  "electrical:bb5b50e467d16e073be684f97981a962ff151a04": {
+    "losses_pct": 2.1,
+    "worst_arc_flash_cal_cm2": 6.4,
+    "short_circuit_ka": 42.5,
+    "discrimination_margins_s": {
+      "MV_incomer>LV_incomer": 0.45,
+      "LV_incomer>outgoing_feeder": 0.36,
+      "outgoing_feeder>PDU": 0.34,
+      "PDU>rack_input": 0.26
+    }
+  }
+}

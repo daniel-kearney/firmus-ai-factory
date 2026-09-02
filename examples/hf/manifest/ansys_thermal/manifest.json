@@ -1,0 +1,10 @@
+{
+  "$comment": "Maps BoD content hash -> ThermalCorrection payload. Keys computed by firmus_ai_factory.hf.thermal._thermal_key.",
+  "thermal:7a18fb052584a72d53b26136511027d5a7fede4b": {
+    "pue_bump": 0.008,
+    "rack_hotspot_c": 41.3,
+    "rack_hotspot_margin_c": 3.7,
+    "cdu_delta_t_c": 11.2,
+    "hotspot_violation": false
+  }
+}

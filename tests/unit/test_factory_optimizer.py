@@ -24,7 +24,7 @@ BT1_2 = REPO_ROOT / "examples" / "bod" / "bt1_2.yaml"
 class TestEvaluateBoD:
     def test_evaluate_returns_positive_energy(self) -> None:
         bod = load_bod(BT1_2)
-        roi, energy = _evaluate_bod(bod)
+        roi, energy, _hf = _evaluate_bod(bod)
         assert isinstance(roi, RoIPack)
         assert isinstance(energy, EnergyPack)
         assert energy.annual_energy_mwh > 0.0
@@ -36,8 +36,8 @@ class TestEvaluateBoD:
         bod = load_bod(BT1_2)
         bod_small = _mutate_bod(bod, {"nvidia_platform.num_racks": 16})
         bod_big = _mutate_bod(bod, {"nvidia_platform.num_racks": 40})
-        _, e_small = _evaluate_bod(bod_small)
-        _, e_big = _evaluate_bod(bod_big)
+        _, e_small, _ = _evaluate_bod(bod_small)
+        _, e_big, _ = _evaluate_bod(bod_big)
         assert e_big.annual_energy_mwh > e_small.annual_energy_mwh
 
 

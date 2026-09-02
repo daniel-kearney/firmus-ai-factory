@@ -1,0 +1,83 @@
+{
+  "$comment": [
+    "Representative ETAP v22.6 batch response for a BT1_2-class BoD.",
+    "Studies executed: load_flow, short_circuit (IEC 60909), arc_flash",
+    "(IEEE 1584-2018), protection_coordination. The adapter reads ONLY the",
+    "top-level fields listed in the ElectricalCorrection contract plus the",
+    "discrimination_margins_s block; the study detail below is provenance."
+  ],
+
+  "losses_pct": 2.1,
+  "worst_arc_flash_cal_cm2": 6.4,
+  "short_circuit_ka": 42.5,
+  "discrimination_margins_s": {
+    "$comment": "Keys MUST mirror BasisOfDesign.electrical.discrimination_targets (BT1_2 uses MV_incomer, LV_incomer, outgoing_feeder, PDU, rack_input).",
+    "MV_incomer>LV_incomer": 0.45,
+    "LV_incomer>outgoing_feeder": 0.36,
+    "outgoing_feeder>PDU": 0.34,
+    "PDU>rack_input": 0.26
+  },
+
+  "provenance": {
+    "solver": "etap",
+    "solver_version": "22.6.0",
+    "project_ref": "etap://projects/BT1_2/rev-c",
+    "studies_run": ["load_flow", "short_circuit", "arc_flash", "protection_coordination"],
+    "standards": {
+      "short_circuit": "IEC 60909:2016",
+      "arc_flash": "IEEE 1584-2018"
+    },
+    "wall_clock_s": 187.4,
+    "run_id": "bt1_2/etap/rev-c/2026-08-14T09:44:00Z"
+  },
+
+  "load_flow": {
+    "total_load_mw": 24.6,
+    "total_load_mvar": 6.4,
+    "power_factor": 0.968,
+    "losses_kw": 517.0,
+    "losses_pct": 2.1,
+    "voltage_deviation_pct_max": 1.42,
+    "voltage_deviation_pct_worst_bus": "LV_PDU_04",
+    "transformer_utilization_pct_max": 71.2
+  },
+
+  "short_circuit": {
+    "method": "IEC_60909_max",
+    "buses": [
+      { "bus": "MV_incomer", "voltage_kv": 33.0, "ik_ka": 12.4, "ip_ka": 32.1 },
+      { "bus": "LV_incomer", "voltage_kv": 0.415, "ik_ka": 42.5, "ip_ka": 108.6 },
+      { "bus": "PDU_main", "voltage_kv": 0.415, "ik_ka": 38.9, "ip_ka": 99.4 }
+    ],
+    "worst_bus": "LV_incomer",
+    "worst_ik_ka": 42.5,
+    "switchgear_rating_ka": 50.0,
+    "margin_ka": 7.5,
+    "status": "OK"
+  },
+
+  "arc_flash": {
+    "method": "IEEE_1584_2018",
+    "worst_bus": "LV_incomer",
+    "worst_incident_energy_cal_cm2": 6.4,
+    "worst_ppe_category": 2,
+    "boundary_mm": 1215,
+    "boards": [
+      { "board": "LV_incomer",  "incident_energy_cal_cm2": 6.4, "ppe_cat": 2 },
+      { "board": "PDU_main",    "incident_energy_cal_cm2": 4.1, "ppe_cat": 2 },
+      { "board": "ATS_a",       "incident_energy_cal_cm2": 3.8, "ppe_cat": 2 },
+      { "board": "rack_PDU_R01","incident_energy_cal_cm2": 1.2, "ppe_cat": 1 }
+    ]
+  },
+
+  "protection_coordination": {
+    "method": "time_current_curve_review",
+    "boundaries": [
+      { "id": "MV_incomer>LV_incomer",      "margin_s": 0.45, "target_s": 0.40, "status": "OK" },
+      { "id": "LV_incomer>outgoing_feeder", "margin_s": 0.36, "target_s": 0.30, "status": "OK" },
+      { "id": "outgoing_feeder>PDU",        "margin_s": 0.34, "target_s": 0.30, "status": "OK" },
+      { "id": "PDU>rack_input",             "margin_s": 0.26, "target_s": 0.20, "status": "OK" }
+    ],
+    "all_pass": true
+  }
+}

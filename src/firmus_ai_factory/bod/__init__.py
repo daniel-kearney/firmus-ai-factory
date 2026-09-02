@@ -46,6 +46,13 @@ from firmus_ai_factory.bod.hydrate import (
     hydrate_electricity_tariff,
     hydrate_factory,
 )
+from firmus_ai_factory.bod.high_fidelity import (
+    HFBackend,
+    HFAdapterBoD,
+    ThermalHFBoD,
+    ElectricalHFBoD,
+    HighFidelityBoD,
+)
 
 __all__ = [
     "BasisOfDesign",
@@ -67,4 +74,9 @@ __all__ = [
     "hydrate_factory_config",
     "hydrate_electricity_tariff",
     "hydrate_factory",
+    "HFBackend",
+    "HFAdapterBoD",
+    "ThermalHFBoD",
+    "ElectricalHFBoD",
+    "HighFidelityBoD",
 ]

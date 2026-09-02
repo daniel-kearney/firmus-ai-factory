@@ -1,0 +1,70 @@
+{
+  "$comment": [
+    "Representative Ansys Fluent v24.2 batch-mode response for a BT1_2-class BoD.",
+    "Solver was run in journal mode against a 12M-cell mesh of Hall A with the",
+    "primary_liquid + secondary_air loops from the BoD coupled through a CDU boundary.",
+    "The adapter reads ONLY the top-level fields listed in the ThermalCorrection",
+    "contract; the rest is provenance for auditors and is ignored by the parser."
+  ],
+
+  "pue_bump": 0.008,
+  "rack_hotspot_c": 41.3,
+  "rack_hotspot_margin_c": 3.7,
+  "cdu_delta_t_c": 11.2,
+  "hotspot_violation": false,
+
+  "provenance": {
+    "solver": "ansys_fluent",
+    "solver_version": "24.2.0",
+    "mesh_cells": 12042517,
+    "turbulence_model": "k-omega SST",
+    "wall_treatment": "enhanced_wall",
+    "convergence": {
+      "residual_continuity": 4.7e-5,
+      "residual_x_velocity": 6.1e-5,
+      "residual_energy": 2.3e-7,
+      "iterations": 1842,
+      "converged": true
+    },
+    "wall_clock_s": 4213.4,
+    "solver_licence": "ANSYS Mechanical Enterprise + CFD Premium",
+    "run_id": "bt1_2/fluent/rev-c/2026-08-14T09:12:00Z",
+    "geometry_ref": "sharepoint://firmus/BT1_2/cad/hall_a_v3.step",
+    "bod_hash_input": "thermal:8f3a1c9e...  (echo of the key the adapter used to look up this file)"
+  },
+
+  "per_rack": {
+    "$comment": "Rack outlet coolant temps by row/column. Rack index format R<row><col>.",
+    "R01A": 39.8, "R01B": 40.1, "R01C": 40.4, "R01D": 40.9,
+    "R02A": 40.2, "R02B": 40.6, "R02C": 41.0, "R02D": 41.3,
+    "R03A": 40.1, "R03B": 40.5, "R03C": 40.8, "R03D": 41.1,
+    "R04A": 39.9, "R04B": 40.2, "R04C": 40.5, "R04D": 40.9
+  },
+
+  "loop_summary": {
+    "primary_liquid": {
+      "supply_c": 30.0,
+      "return_c": 41.2,
+      "flow_kg_s": 148.6,
+      "pressure_drop_kpa": 82.4,
+      "pump_power_kw": 68.4
+    },
+    "secondary_air": {
+      "supply_c": 22.0,
+      "return_c": 32.1,
+      "flow_m3_s": 74.5,
+      "fan_power_kw": 41.2
+    },
+    "cdu": {
+      "approach_c": 3.1,
+      "effectiveness": 0.86
+    }
+  },
+
+  "envelope_check": {
+    "nvidia_platform": "vr_nvl72_max_p",
+    "max_coolant_c_limit": 45.0,
+    "worst_observed_c": 41.3,
+    "margin_c": 3.7
+  }
+}

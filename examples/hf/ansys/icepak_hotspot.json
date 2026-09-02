@@ -1,0 +1,47 @@
+{
+  "$comment": [
+    "Ansys Icepak response for a stress-test BoD: same platform (VR NVL72 Max P)",
+    "but coolant inlet raised to 40C and rack power pushed to 165 kW. Icepak",
+    "reports the top row of racks breaching the NVIDIA envelope. The adapter",
+    "surfaces hotspot_violation=true and the optimizer disqualifies the",
+    "candidate before it can win the sweep."
+  ],
+
+  "pue_bump": 0.021,
+  "rack_hotspot_c": 46.8,
+  "rack_hotspot_margin_c": -1.8,
+  "cdu_delta_t_c": 13.9,
+  "hotspot_violation": true,
+
+  "provenance": {
+    "solver": "ansys_icepak",
+    "solver_version": "24.2.0",
+    "mesh_cells": 8921004,
+    "turbulence_model": "zero_equation_mixing_length",
+    "convergence": {
+      "residual_energy": 5.1e-7,
+      "iterations": 1204,
+      "converged": true
+    },
+    "wall_clock_s": 2871.9,
+    "run_id": "bt1_2/icepak/rev-c-hot/2026-08-15T14:08:00Z",
+    "warnings": [
+      "Rack R02D outlet coolant 46.8 C exceeds NVIDIA VR NVL72 Max P envelope (45.0 C)",
+      "Consider: reduce inlet temp, add secondary loop capacity, or de-rate GPU power"
+    ]
+  },
+
+  "hotspots": [
+    { "rack": "R02D", "coolant_c": 46.8, "gpu_junction_c": 92.4, "margin_c": -1.8 },
+    { "rack": "R03D", "coolant_c": 46.1, "gpu_junction_c": 91.5, "margin_c": -1.1 },
+    { "rack": "R02C", "coolant_c": 45.7, "gpu_junction_c": 90.9, "margin_c": -0.7 }
+  ],
+
+  "envelope_check": {
+    "nvidia_platform": "vr_nvl72_max_p",
+    "max_coolant_c_limit": 45.0,
+    "worst_observed_c": 46.8,
+    "margin_c": -1.8,
+    "status": "VIOLATION"
+  }
+}

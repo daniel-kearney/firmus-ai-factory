@@ -89,6 +89,87 @@ See [`docs/BOD_SCHEMA.md`](docs/BOD_SCHEMA.md) for the full contract, and
 [`examples/07_bod_ingestion_and_optimize.py`](examples/07_bod_ingestion_and_optimize.py)
 for the end-to-end walk-through.
 
+### High-Fidelity Hooks (Ansys + ETAP)
+
+Any BoD can attach Ansys (thermal) and ETAP (electrical) via an optional
+`high_fidelity` block. Their corrections are folded into the optimizer's
+PUE, losses, RoI, and energy packs, and hard violations (hotspot,
+arc-flash, discrimination) disqualify candidates. Backends: `subprocess`
+(local CLI), `http` (remote solve service), `file` (pre-computed lookup),
+`disabled`. Fallback is graceful — an unreachable solver stamps the
+candidate `hf_status='fallback'` and the optimizer keeps going.
+
+#### Solver response contracts
+
+Both adapters read a small, stable set of top-level fields. Everything
+else in the response (mesh cells, convergence residuals, per-bus load
+flow, IEEE 1584 board breakdown) is provenance for auditors and is
+ignored by the parser but recommended for the artefact trail.
+
+**Ansys (Fluent / Icepak) — five fields:**
+
+```json
+{
+  "pue_bump": 0.008,
+  "rack_hotspot_c": 41.3,
+  "rack_hotspot_margin_c": 3.7,
+  "cdu_delta_t_c": 11.2,
+  "hotspot_violation": false
+}
+```
+
+Full worked responses:
+[`examples/hf/ansys/fluent_nominal.json`](examples/hf/ansys/fluent_nominal.json)
+(12M-cell Fluent v24.2 with residuals, wall clock, per-rack outlet temps,
+loop summary) and
+[`examples/hf/ansys/icepak_hotspot.json`](examples/hf/ansys/icepak_hotspot.json)
+(Icepak run flagging `hotspot_violation: true`, which disqualifies the
+candidate).
+
+**ETAP — four fields plus a discrimination margins block:**
+
+```json
+{
+  "losses_pct": 2.1,
+  "worst_arc_flash_cal_cm2": 6.4,
+  "short_circuit_ka": 42.5,
+  "discrimination_margins_s": {
+    "MV_incomer>LV_incomer": 0.45,
+    "LV_incomer>outgoing_feeder": 0.36,
+    "outgoing_feeder>PDU": 0.34,
+    "PDU>rack_input": 0.26
+  }
+}
+```
+
+`discrimination_margins_s` keys must mirror
+`electrical.discrimination_targets` in the BoD exactly. The adapter
+cross-checks solver margins against BoD targets and returns
+`discrimination_ok=false` with a specific violation string naming the
+boundary and both numbers if any margin falls short.
+
+Full worked responses:
+[`examples/hf/etap/etap_nominal.json`](examples/hf/etap/etap_nominal.json)
+(ETAP v22.6 with load_flow, IEC 60909 short_circuit, IEEE 1584-2018
+arc_flash, protection_coordination) and
+[`examples/hf/etap/etap_discrimination_miss.json`](examples/hf/etap/etap_discrimination_miss.json)
+(faster LV incomer relay: 0.22 s vs BoD target 0.40 s, disqualifies the
+candidate).
+
+#### Running end-to-end without a licence
+
+[`examples/bod/bt1_2_with_hf_file_backend.yaml`](examples/bod/bt1_2_with_hf_file_backend.yaml)
+points `high_fidelity` at pre-computed manifests under
+[`examples/hf/manifest/`](examples/hf/manifest/) via the `file` backend.
+The optimizer runs anywhere and picks up the manifest-served correction
+(2.1% losses, 6.4 cal/cm² arc-flash) → NPV AUD 371.3M, PUE 1.0028. Full
+contract and manifest format:
+[`docs/HIGH_FIDELITY_HOOKS.md`](docs/HIGH_FIDELITY_HOOKS.md).
+Contract tests over the shipped fixtures:
+[`tests/unit/test_hf_fixtures.py`](tests/unit/test_hf_fixtures.py) —
+if a fixture stops parsing there, the external solver contract is
+broken.
+
 ## Quick Start
 
 ```python
