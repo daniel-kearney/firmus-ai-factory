@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    name: pytest (python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # Install only what the BoD + HF suite actually needs. The full
+      # requirements.txt pulls assimulo (needs SUNDIALS system libs) and
+      # gurobipy (commercial licence) which don't belong in CI. Keep this
+      # list minimal and pin nothing so Dependabot has room to move.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            "numpy>=1.24.0" \
+            "scipy>=1.10.0" \
+            "pandas>=2.0.0" \
+            "pydantic>=2.0.0" \
+            "cvxpy>=1.4.0" \
+            "pyyaml>=6.0" \
+            "pytest>=7.3.0" \
+            "pytest-timeout>=2.1.0" \
+            "pytest-cov>=4.1.0"
+          pip install -e . --no-deps
+
+      - name: Run BoD + optimizer + HF test suite
+        # These are the 50 tests we've verified pass end-to-end. Older
+        # modules under tests/unit/ (test_power, test_control, test_grid,
+        # test_vera_rubin_thermal, etc.) predate the BoD/HF work and have
+        # known failures — tracked separately, not gating this pipeline.
+        run: |
+          python -m pytest \
+            tests/unit/test_bod_schema.py \
+            tests/unit/test_bod_hydrate.py \
+            tests/unit/test_factory_optimizer.py \
+            tests/unit/test_hf_adapters.py \
+            tests/unit/test_hf_fixtures.py \
+            -v --tb=short
+
+      - name: Verify shipped HF fixtures are valid JSON
+        run: |
+          python -c "
+          import json, sys
+          from pathlib import Path
+          fixtures = list(Path('examples/hf').rglob('*.json'))
+          assert fixtures, 'no HF fixtures found'
+          for f in fixtures:
+              try:
+                  json.loads(f.read_text())
+                  print(f'ok   {f}')
+              except json.JSONDecodeError as e:
+                  print(f'FAIL {f}: {e}', file=sys.stderr)
+                  sys.exit(1)
+          print(f'\n{len(fixtures)} fixtures validated')
+          "
+
+      - name: Smoke-test the file-backend example BoD end-to-end
+        run: |
+          python -c "
+          from firmus_ai_factory.bod import load_bod
+          from firmus_ai_factory.optimization import optimize
+          bod = load_bod('examples/bod/bt1_2_with_hf_file_backend.yaml')
+          res = optimize(bod, samples_per_var=3, with_sensitivity=False)
+          assert res.candidates_evaluated > 0
+          assert res.roi.npv > 0
+          assert res.hf.electrical_status == 'ok'
+          assert res.hf.electrical_correction['losses_pct'] == 2.1
+          print(f'candidates={res.candidates_evaluated} '
+                f'npv={res.roi.currency} {res.roi.npv:,.0f} '
+                f'pue={res.energy.pue:.4f} '
+                f'thermal={res.hf.thermal_status} '
+                f'electrical={res.hf.electrical_status}')
+          "
