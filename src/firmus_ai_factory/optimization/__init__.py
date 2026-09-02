@@ -11,6 +11,7 @@ from .factory_optimizer import (
     RoIPack,
     EnergyPack,
     SensitivityEntry,
+    HFPack,
 )
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     'RoIPack',
     'EnergyPack',
     'SensitivityEntry',
+    'HFPack',
 ]

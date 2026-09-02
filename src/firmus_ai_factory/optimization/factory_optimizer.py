@@ -39,6 +39,12 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from firmus_ai_factory.bod.hydrate import hydrate_factory
 from firmus_ai_factory.bod.schema import BasisOfDesign
+from firmus_ai_factory.hf import (
+    HFResult,
+    HFStatus,
+    run_electrical,
+    run_thermal,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -113,6 +119,27 @@ class EnergyPack:
 
 
 @dataclass
+class HFPack:
+    """Provenance for the high-fidelity contribution to a candidate score.
+
+    Present on every OptimizerResult (empty if neither adapter is wired).
+    """
+
+    thermal_status: str = HFStatus.ABSENT.value
+    electrical_status: str = HFStatus.ABSENT.value
+    thermal_correction: Optional[Dict[str, Any]] = None
+    electrical_correction: Optional[Dict[str, Any]] = None
+    thermal_reason: str = ""
+    electrical_reason: str = ""
+    hotspot_violation: bool = False
+    arc_flash_violation: bool = False
+    discrimination_ok: bool = True
+
+    def to_dict(self) -> Dict[str, Any]:
+        return self.__dict__
+
+
+@dataclass
 class SensitivityEntry:
     variable: str
     low_value: float
@@ -130,6 +157,7 @@ class OptimizerResult:
     sensitivity: List[SensitivityEntry] = field(default_factory=list)
     candidates_evaluated: int = 0
     objective_score: float = 0.0
+    hf: HFPack = field(default_factory=HFPack)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -139,6 +167,7 @@ class OptimizerResult:
             "sensitivity": [s.__dict__ for s in self.sensitivity],
             "candidates_evaluated": self.candidates_evaluated,
             "objective_score": self.objective_score,
+            "hf": self.hf.to_dict(),
         }
 
 
@@ -150,14 +179,50 @@ class OptimizerResult:
 HOURS_PER_YEAR = 8760.0
 
 
-def _evaluate_bod(bod: BasisOfDesign) -> Tuple[RoIPack, EnergyPack]:
-    """Score a candidate BoD by hydrating it and reading physics + economics."""
+def _evaluate_bod(
+    bod: BasisOfDesign,
+    *,
+    use_hf: bool = True,
+) -> Tuple[RoIPack, EnergyPack, "HFPack"]:
+    """Score a candidate BoD by hydrating it and reading physics + economics.
+
+    When ``use_hf`` is true and the BoD declares Ansys / ETAP hooks, the
+    solvers are called and their corrections are folded into PUE, energy,
+    and losses before RoI is computed. Fallback is graceful when
+    ``bod.high_fidelity.fail_open`` is true (the default).
+    """
     factory = hydrate_factory(bod)
     report = factory.generate_full_report()
 
     it_kw = report["power"]["it_power_kw"]
     facility_kw = report["power"]["total_facility_power_kw"]
     pue = report["power"]["pue"]
+
+    # --- High-fidelity corrections -----------------------------------------
+    hf_pack = HFPack()
+    if use_hf and bod.high_fidelity is not None and bod.high_fidelity.is_active:
+        fail_open = bod.high_fidelity.fail_open
+        t_res = run_thermal(bod, fail_open=fail_open)
+        e_res = run_electrical(bod, fail_open=fail_open)
+
+        hf_pack.thermal_status = t_res.status.value
+        hf_pack.electrical_status = e_res.status.value
+        hf_pack.thermal_reason = t_res.reason
+        hf_pack.electrical_reason = e_res.reason
+
+        if t_res.correction is not None:
+            hf_pack.thermal_correction = t_res.correction.to_dict()
+            pue = pue + t_res.correction.pue_bump
+            # Facility load scales with the corrected PUE.
+            facility_kw = it_kw * pue
+            hf_pack.hotspot_violation = t_res.correction.hotspot_violation
+
+        if e_res.correction is not None:
+            hf_pack.electrical_correction = e_res.correction.to_dict()
+            # Electrical losses add to facility draw (fraction of IT).
+            facility_kw = facility_kw * (1.0 + e_res.correction.losses_pct / 100.0)
+            hf_pack.arc_flash_violation = e_res.correction.arc_flash_violation
+            hf_pack.discrimination_ok = e_res.correction.discrimination_ok
 
     utilization = bod.nvidia_platform.utilization_pct / 100.0
     hours = HOURS_PER_YEAR * utilization
@@ -252,7 +317,7 @@ def _evaluate_bod(bod: BasisOfDesign) -> Tuple[RoIPack, EnergyPack]:
         grid_emissions_kg_co2_per_kwh=ef,
         annual_tco2e=annual_tco2e,
     )
-    return roi, energy
+    return roi, energy, hf_pack
 
 
 # ---------------------------------------------------------------------------
@@ -368,26 +433,30 @@ def optimize(
 
     candidates = _generate_candidates(bod, samples_per_var, max_candidates)
 
-    best: Optional[Tuple[float, BasisOfDesign, RoIPack, EnergyPack]] = None
+    best: Optional[Tuple[float, BasisOfDesign, RoIPack, EnergyPack, HFPack]] = None
     evaluated = 0
     for i, overrides in enumerate(candidates):
         try:
             candidate = _mutate_bod(bod, overrides) if overrides else bod
-            roi, energy = _evaluate_bod(candidate)
+            roi, energy, hf_pack = _evaluate_bod(candidate)
         except (ValueError, NotImplementedError):
             # Invalid combination: skip, but still count so progress is honest.
             continue
         evaluated += 1
+        # Hard constraints from HF: a candidate that breaches hotspot or
+        # arc-flash envelopes is disqualified so it cannot win the sweep.
+        if hf_pack.hotspot_violation or hf_pack.arc_flash_violation or not hf_pack.discrimination_ok:
+            continue
         score = _score(bod.optimizer.objectives, roi, energy)
         if best is None or score > best[0]:
-            best = (score, candidate, roi, energy)
+            best = (score, candidate, roi, energy, hf_pack)
         if progress:
             progress(i + 1, len(candidates))
 
     if best is None:
         raise RuntimeError("Optimizer evaluated 0 valid candidates - check free_variables ranges.")
 
-    score, winner_bod, roi, energy = best
+    score, winner_bod, roi, energy, winner_hf = best
 
     sensitivity: List[SensitivityEntry] = []
     if with_sensitivity and bod.optimizer.free_variables:
@@ -401,6 +470,7 @@ def optimize(
         roi=roi,
         energy=energy,
         sensitivity=sensitivity,
+        hf=winner_hf,
         candidates_evaluated=evaluated,
         objective_score=score,
     )
@@ -414,10 +484,10 @@ def _annotate_frozen(bod: BasisOfDesign) -> BasisOfDesign:
     return BasisOfDesign.model_validate(payload)
 
 
-def _tornado(winner: BasisOfDesign) -> List[SensitivityEntry]:
+def _tornado(winner: BasisOfDesign, *, use_hf: bool = True) -> List[SensitivityEntry]:
     """One-at-a-time NPV sensitivity around the winning BoD."""
     entries: List[SensitivityEntry] = []
-    base_roi, _ = _evaluate_bod(winner)
+    base_roi, _, _ = _evaluate_bod(winner, use_hf=use_hf)
     for path, (lo, hi) in winner.optimizer.free_variables.items():
         integer = _looks_integer(path)
         lo_val: Any = int(round(lo)) if integer else lo
@@ -425,8 +495,8 @@ def _tornado(winner: BasisOfDesign) -> List[SensitivityEntry]:
         try:
             bod_lo = _mutate_bod(winner, {path: lo_val})
             bod_hi = _mutate_bod(winner, {path: hi_val})
-            roi_lo, _ = _evaluate_bod(bod_lo)
-            roi_hi, _ = _evaluate_bod(bod_hi)
+            roi_lo, _, _ = _evaluate_bod(bod_lo, use_hf=use_hf)
+            roi_hi, _, _ = _evaluate_bod(bod_hi, use_hf=use_hf)
         except (ValueError, NotImplementedError):
             continue
         entries.append(

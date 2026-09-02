@@ -531,6 +531,13 @@ class BasisOfDesign(_BoDModel):
     nvidia_platform: NVIDIAPlatformBoD
     economics: EconomicsBoD
     optimizer: OptimizerDirectivesBoD = Field(default_factory=OptimizerDirectivesBoD)
+    high_fidelity: Optional["HighFidelityBoD"] = Field(
+        default=None,
+        description=(
+            "Optional Ansys / ETAP high-fidelity solver hooks. Absent means "
+            "the optimizer runs purely on the analytic Digital Twin."
+        ),
+    )
 
     # ------------------------------------------------------------------
     # Cross-domain integrity checks
@@ -572,3 +579,9 @@ class BasisOfDesign(_BoDModel):
     def is_frozen(self) -> bool:
         """A BoD is frozen once ``metadata.approval`` is populated."""
         return self.metadata.approval is not None
+
+
+# Resolve forward reference to HighFidelityBoD (defined in bod.high_fidelity).
+from firmus_ai_factory.bod.high_fidelity import HighFidelityBoD  # noqa: E402
+
+BasisOfDesign.model_rebuild()

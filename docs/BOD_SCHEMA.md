@@ -195,7 +195,8 @@ changes (new optional fields) do not bump the version. Any breaking change
 - **AI Factory OS** - reads the BoD at commissioning to seed the runtime
   control plane.
 - **Firmus Digital Twin** - Ansys thermal and ETAP electrical simulators
-  attach at the BoD level so their high-fidelity results reconcile against
-  the same design intent everyone else is using.
+  attach at the BoD level via the optional `high_fidelity` block so their
+  high-fidelity results reconcile against the same design intent everyone
+  else is using. See [HIGH_FIDELITY_HOOKS.md](HIGH_FIDELITY_HOOKS.md).
 - **Dashboards & Reports / Omniverse / Playbooks / Agentic AI training** -
   all downstream of the optimizer pack.

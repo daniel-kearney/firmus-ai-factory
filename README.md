@@ -89,6 +89,15 @@ See [`docs/BOD_SCHEMA.md`](docs/BOD_SCHEMA.md) for the full contract, and
 [`examples/07_bod_ingestion_and_optimize.py`](examples/07_bod_ingestion_and_optimize.py)
 for the end-to-end walk-through.
 
+Ansys (thermal) and ETAP (electrical) can be attached to any BoD via the
+optional `high_fidelity` block. Their corrections are folded into the
+optimizer's PUE, losses, RoI, and energy packs, and hard violations
+(hotspot, arc-flash, discrimination) disqualify candidates. Backends
+support `subprocess`, `http`, and `file` transports with a graceful
+fallback so runs work anywhere. See
+[`docs/HIGH_FIDELITY_HOOKS.md`](docs/HIGH_FIDELITY_HOOKS.md) and
+[`examples/bod/bt1_2_with_hf.yaml`](examples/bod/bt1_2_with_hf.yaml).
+
 ## Quick Start
 
 ```python
