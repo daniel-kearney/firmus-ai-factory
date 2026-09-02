@@ -645,4 +645,3 @@ if __name__ == "__main__":
               f"{report['demand_response_revenue']['total_annual_revenue']:,.0f}")
         print(f"  Net Annual Cost: {report['energy_cost']['currency']} "
               f"{report['net_annual_cost']:,.0f}")
-"""

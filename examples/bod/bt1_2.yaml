@@ -1,0 +1,168 @@
+# Firmus AI Factory BoD - BT1_2
+# Matches simulations/bt1_2_peak_load_simulation.py so the hydrated
+# FactoryConfig lines up with the existing peak-load run.
+#
+# schema: src/firmus_ai_factory/bod/schema.py (v0.1.0)
+
+metadata:
+  schema_version: "0.1.0"
+  bod_version: "v0.1"
+  site_id: "BT1_2"
+  title: "Firmus AI Factory Basis of Design - BT1_2"
+  authors:
+    - "Daniel Kearney"
+  notes: "Reference BoD for the peak-load simulation baseline."
+
+site:
+  site_id: "BT1_2"
+  country: "AU"
+  region: "TAS"
+  latitude_deg: -41.4
+  longitude_deg: 147.1
+  elevation_m: 60.0
+  land_area_m2: 20000.0
+  it_hall_area_m2: 3200.0
+  design_life_years: 15
+  seismic_zone: "low"
+
+climate:
+  ashrae_class: "W40"
+  design_dry_bulb_c: 27.0
+  design_wet_bulb_c: 19.0
+  extreme_dry_bulb_c: 36.0
+  ambient_temp_range_c: [-2.0, 36.0]
+  relative_humidity_range_pct: [30.0, 90.0]
+  solar_ghi_kwh_m2_yr: 1450.0
+  hdd_18_c: 1700.0
+  cdd_18_c: 220.0
+
+mechanical:
+  hot_aisle_containment: true
+  cold_aisle_containment: false
+  raised_floor: false
+  floor_loading_kn_m2: 15.0
+  ceiling_height_m: 5.0
+  fire_suppression: "pre_action_sprinkler"
+  seismic_bracing: false
+
+cooling:
+  architecture: "benmax_hcu2500"
+  heat_rejection: "adiabatic"
+  design_ppue: 1.06
+  design_pue: 1.15
+  design_wue_l_per_kwh: 0.15
+  inlet_temp_c: 35.0
+  approach_temp_c: 5.0
+  loops:
+    - name: "TCS primary (rack -> CDU)"
+      fluid: "PG25"
+      supply_temp_c: 35.0
+      return_temp_c: 45.0
+      flow_lpm: 480.0
+      design_pressure_kpa: 400.0
+    - name: "FWS secondary (CDU -> dry cooler)"
+      fluid: "water"
+      supply_temp_c: 32.0
+      return_temp_c: 42.0
+      flow_lpm: 900.0
+      design_pressure_kpa: 500.0
+  n_plus_redundancy: "N+1"
+
+electrical:
+  incoming_supply_kv: 66.0
+  n_incomers: 2
+  design_it_load_mw: 7.3
+  design_facility_load_mw: 8.4
+  transformers:
+    - role: "HV/MV incomer"
+      primary_kv: 66.0
+      secondary_v: 11000.0
+      rating_mva: 15.0
+      impedance_pct: 10.0
+      vector_group: "YNyn0"
+    - role: "MV/LV distribution"
+      primary_kv: 11.0
+      secondary_v: 415.0
+      rating_mva: 2.5
+      impedance_pct: 6.0
+      vector_group: "Dyn11"
+  ups:
+    topology: "lithium_ion_bess"
+    rating_kva: 4000.0
+    autonomy_minutes: 5.0
+    redundancy: "N+1"
+  generators:
+    fuel: "diesel"
+    rating_kva: 3000.0
+    n_units: 3
+    fuel_autonomy_hours: 72.0
+  tier_rating: "Tier III"
+  protection_philosophy_ref: "sharepoint://CubeDeployment/Firmus AI Factory Electrical Basis of Design v0.1.pdf"
+  discrimination_targets:
+    "MV_incomer>LV_incomer": 0.4
+    "LV_incomer>outgoing_feeder": 0.3
+    "outgoing_feeder>PDU": 0.3
+    "PDU>rack_input": 0.2
+  earth_fault_max_current_a: 300.0
+  arc_flash_max_incident_energy_cal_cm2: 8.0
+
+grid:
+  region: "australia_nem"
+  operator: "AEMO / TasNetworks"
+  poi_capacity_mw: 10.0
+  nominal_frequency_hz: 50.0
+  frequency_normal_band_hz: 0.15
+  voltage_kv_options: [11.0, 22.0, 66.0]
+  power_factor_target: 0.98
+  grid_emissions_kg_co2_per_kwh: 0.14  # TAS hydro-dominated
+  demand_response_programs: ["frequency_regulation", "wholesale_price_response"]
+  firming_bess_mwh: 20.0
+
+tariff:
+  structure: "TOU"
+  currency: "AUD"
+  rates_ccy_per_kwh:
+    on_peak: 0.22
+    mid_peak: 0.14
+    off_peak: 0.06
+  demand_charge_ccy_per_kw_month: 12.0
+  fixed_charge_ccy_per_month: 800.0
+  escalation_pct_yr: 2.5
+
+network:
+  fabric: "NVIDIA Quantum-2 InfiniBand"
+  rail_topology: "rail_optimized_fat_tree"
+  intra_rack_gbps: 800.0
+  inter_rack_gbps: 800.0
+  dc_egress_gbps: 400.0
+  peering_providers: ["Megaport", "Equinix Fabric"]
+  latency_target_ms_intra_region: 2.0
+
+nvidia_platform:
+  platform: "vr_nvl72_max_p"
+  num_racks: 32
+  power_mode: "max_p"
+  coolant_inlet_temp_c: 35.0
+  reference_workload: "mixed_training_inference"
+  utilization_pct: 78.0
+
+economics:
+  currency: "AUD"
+  capex_usd_per_kw_it: 8500.0
+  opex_fixed_usd_per_kw_it_yr: 90.0
+  revenue_usd_per_gpu_hour: 3.20
+  discount_rate_pct: 9.0
+  horizon_years: 10
+  tax_rate_pct: 30.0
+  depreciation_years: 7
+
+optimizer:
+  objectives:
+    - "maximize_npv"
+    - "minimize_energy"
+  free_variables:
+    "nvidia_platform.num_racks": [16, 48]
+    "cooling.inlet_temp_c": [30.0, 40.0]
+    "nvidia_platform.utilization_pct": [60.0, 90.0]
+  fixed_constraints:
+    "grid.poi_capacity_mw": 10.0

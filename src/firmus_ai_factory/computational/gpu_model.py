@@ -561,4 +561,3 @@ if __name__ == "__main__":
     print(f"Mean power: {profile.mean_power:.1f} W")
     print(f"Peak power: {profile.peak_power:.1f} W")
     print(f"Energy: {profile.energy_kwh:.4f} kWh")
-"""

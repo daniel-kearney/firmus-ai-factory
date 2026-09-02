@@ -5,8 +5,20 @@ and multi-objective optimization.
 """
 
 from .mpc import ModelPredictiveController, WorkloadJob
+from .factory_optimizer import (
+    optimize,
+    OptimizerResult,
+    RoIPack,
+    EnergyPack,
+    SensitivityEntry,
+)
 
 __all__ = [
     'ModelPredictiveController',
     'WorkloadJob',
+    'optimize',
+    'OptimizerResult',
+    'RoIPack',
+    'EnergyPack',
+    'SensitivityEntry',
 ]
