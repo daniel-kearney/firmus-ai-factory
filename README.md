@@ -64,6 +64,31 @@ firmus-ai-factory/
 |-- docs/                        # Documentation
 ```
 
+## Basis of Design (BoD) - ingestion and optimization
+
+The fastest way to drive the Digital Twin is through a machine-readable BoD.
+A single YAML/JSON document captures nine domains (site, climate, mechanical,
+cooling, electrical, grid, tariff, network, NVIDIA platform) plus economics
+and optimizer directives, is validated end-to-end, and hydrates directly into
+a runnable factory.
+
+```python
+from firmus_ai_factory.bod import load_bod, hydrate_factory
+from firmus_ai_factory.optimization import optimize
+
+bod = load_bod("examples/bod/bt1_2.yaml")
+factory = hydrate_factory(bod)                # runnable Digital Twin
+report = factory.generate_full_report()
+
+result = optimize(bod)                         # winning BoD + RoI + energy
+print(f"Optimal NPV: {result.roi.currency} {result.roi.npv:,.0f}")
+print(f"Annual MWh:  {result.energy.annual_energy_mwh:,.0f}")
+```
+
+See [`docs/BOD_SCHEMA.md`](docs/BOD_SCHEMA.md) for the full contract, and
+[`examples/07_bod_ingestion_and_optimize.py`](examples/07_bod_ingestion_and_optimize.py)
+for the end-to-end walk-through.
+
 ## Quick Start
 
 ```python

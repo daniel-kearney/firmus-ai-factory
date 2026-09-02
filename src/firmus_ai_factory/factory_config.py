@@ -435,4 +435,3 @@ if __name__ == "__main__":
         print(f"  Grid: {report['grid']['region']}")
         print(f"  Annual Energy Cost: {report['grid']['energy_cost']['currency']} "
               f"{report['grid']['energy_cost']['annual_cost']:,.0f}")
-"""

@@ -1,0 +1,109 @@
+# Firmus AI Factory BoD - Southgate 01 (skeleton)
+# Second site to demonstrate the schema is site-agnostic. Numbers are
+# indicative and expected to be replaced during BoD authoring.
+
+metadata:
+  schema_version: "0.1.0"
+  bod_version: "v0.1-draft"
+  site_id: "southgate_01"
+  title: "Firmus AI Factory Basis of Design - Southgate 01 (draft)"
+  authors:
+    - "Daniel Kearney"
+  notes: "Skeleton BoD. Populate with authoritative numbers before G2."
+
+site:
+  site_id: "southgate_01"
+  country: "AU"
+  region: "VIC"
+  latitude_deg: -37.82
+  longitude_deg: 144.96
+  elevation_m: 15.0
+  land_area_m2: 40000.0
+  it_hall_area_m2: 8000.0
+  design_life_years: 20
+
+climate:
+  ashrae_class: "A2"
+  design_dry_bulb_c: 35.0
+  design_wet_bulb_c: 22.0
+  extreme_dry_bulb_c: 44.0
+  ambient_temp_range_c: [2.0, 44.0]
+  relative_humidity_range_pct: [25.0, 85.0]
+
+mechanical:
+  hot_aisle_containment: true
+  cold_aisle_containment: false
+  raised_floor: false
+  floor_loading_kn_m2: 20.0
+  ceiling_height_m: 6.0
+
+cooling:
+  architecture: "benmax_hcu2500"
+  heat_rejection: "hybrid"
+  design_ppue: 1.08
+  design_pue: 1.20
+  design_wue_l_per_kwh: 0.35
+  inlet_temp_c: 35.0
+  approach_temp_c: 6.0
+
+electrical:
+  incoming_supply_kv: 66.0
+  n_incomers: 2
+  design_it_load_mw: 18.0
+  design_facility_load_mw: 22.0
+  ups:
+    topology: "lithium_ion_bess"
+    rating_kva: 10000.0
+    autonomy_minutes: 5.0
+  generators:
+    fuel: "hvo"
+    rating_kva: 3000.0
+    n_units: 6
+    fuel_autonomy_hours: 48.0
+  tier_rating: "Tier III"
+  earth_fault_max_current_a: 500.0
+  arc_flash_max_incident_energy_cal_cm2: 8.0
+
+grid:
+  region: "australia_nem"
+  operator: "AEMO / AusNet"
+  poi_capacity_mw: 30.0
+  nominal_frequency_hz: 50.0
+  voltage_kv_options: [22.0, 66.0]
+  power_factor_target: 0.98
+  grid_emissions_kg_co2_per_kwh: 0.72
+  demand_response_programs: ["wholesale_price_response"]
+
+tariff:
+  structure: "TOU"
+  currency: "AUD"
+  rates_ccy_per_kwh:
+    on_peak: 0.28
+    mid_peak: 0.16
+    off_peak: 0.08
+  demand_charge_ccy_per_kw_month: 15.0
+  fixed_charge_ccy_per_month: 1500.0
+
+network:
+  fabric: "NVIDIA Quantum-2 InfiniBand"
+  dc_egress_gbps: 800.0
+  peering_providers: ["Megaport", "NEXTDC on-net"]
+
+nvidia_platform:
+  platform: "gb300_nvl72"
+  num_racks: 96
+  coolant_inlet_temp_c: 35.0
+  utilization_pct: 72.0
+
+economics:
+  currency: "AUD"
+  capex_usd_per_kw_it: 9200.0
+  revenue_usd_per_gpu_hour: 3.00
+  discount_rate_pct: 9.0
+  horizon_years: 10
+
+optimizer:
+  objectives: ["maximize_npv", "minimize_energy"]
+  free_variables:
+    "nvidia_platform.num_racks": [64, 128]
+    "nvidia_platform.utilization_pct": [60.0, 90.0]
