@@ -1,0 +1,47 @@
+{
+  "$comment": [
+    "ETAP response for a variant BoD where the LV incomer relay was re-set",
+    "with a faster instantaneous element. Coordination with the upstream MV",
+    "incomer collapses: solver margin 0.18 s vs BoD target 0.30 s. The",
+    "adapter compares against BasisOfDesign.electrical.discrimination_targets",
+    "and returns discrimination_ok=false + a specific violation string."
+  ],
+
+  "losses_pct": 2.2,
+  "worst_arc_flash_cal_cm2": 6.6,
+  "short_circuit_ka": 42.6,
+  "discrimination_margins_s": {
+    "MV_incomer>LV_incomer": 0.22,
+    "LV_incomer>outgoing_feeder": 0.36,
+    "outgoing_feeder>PDU": 0.34,
+    "PDU>rack_input": 0.26
+  },
+
+  "provenance": {
+    "solver": "etap",
+    "solver_version": "22.6.0",
+    "project_ref": "etap://projects/BT1_2/rev-c-fast-lv",
+    "run_id": "bt1_2/etap/rev-c-fast-lv/2026-08-16T11:20:00Z",
+    "warnings": [
+      "Boundary MV_incomer>LV_incomer margin 0.22s below BoD target 0.40s",
+      "Recommended: raise LV incomer instantaneous pickup or add short-time delay"
+    ]
+  },
+
+  "arc_flash": {
+    "method": "IEEE_1584_2018",
+    "worst_bus": "LV_incomer",
+    "worst_incident_energy_cal_cm2": 6.6,
+    "worst_ppe_category": 2
+  },
+
+  "protection_coordination": {
+    "boundaries": [
+      { "id": "MV_incomer>LV_incomer",      "margin_s": 0.22, "target_s": 0.40, "status": "FAIL" },
+      { "id": "LV_incomer>outgoing_feeder", "margin_s": 0.36, "target_s": 0.30, "status": "OK" },
+      { "id": "outgoing_feeder>PDU",        "margin_s": 0.34, "target_s": 0.30, "status": "OK" },
+      { "id": "PDU>rack_input",             "margin_s": 0.26, "target_s": 0.20, "status": "OK" }
+    ],
+    "all_pass": false
+  }
+}
